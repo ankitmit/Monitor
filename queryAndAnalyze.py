@@ -98,7 +98,7 @@ def writeFileWithNewPrices():
     text = ''
     allStocks = pInstance.getAllStocks()
     for stock in allStocks:
-        text += stock.ticker + SEP + stock.name + SEP + stock.market + SEP + stock.low + SEP + stock.high + NEW_LINE
+        text += stock.ticker + SEP + stock.name + SEP + stock.market + SEP + str(stock.low) + SEP + str(stock.high) + NEW_LINE
     text = text[:-1]
     uploadFileToDropBox(text)
 
