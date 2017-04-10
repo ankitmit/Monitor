@@ -12,6 +12,8 @@ base_url = {}
 base_url['NASDAQ'] = 'https://www.google.com/finance/info?q=NASDAQ%3A'
 base_url['NYSE'] = 'https://www.google.com/finance/info?q=NYSE%3A'
 last_modified = None
+NEW_LINE = '\n'
+SEP = '`'
 
 def isConfigFileModified():
     curr_date_time = datetime.datetime.now(pytz.timezone('US/Eastern'))
@@ -70,10 +72,6 @@ def createAllStocks(txt):
 
     return pInstance
 
-def readFile(path):
-    f = open(path, 'r')
-    return f.read()
-
 def mainFunc():
     global logger
     while True:
@@ -88,11 +86,21 @@ def mainFunc():
         file_changed, data = getFileFromDropBox()
         if file_changed:
             pInstance = createAllStocks(data)
-        email_text, send_mail = processAllStocks(pInstance)
+        email_text, send_mail, change = processAllStocks(pInstance)
         if send_mail and email_text != '' and len(email_text) > 0:
 	    logger.info( 'sending email')
             sendMail(email_text)
+            writeFileWithNewPrices()
         time.sleep(120)
+
+
+def writeFileWithNewPrices():
+    text = ''
+    allStocks = pInstance.getAllStocks()
+    for stock in allStocks:
+        text += stock.ticker + SEP + stock.name + SEP + stock.market + SEP + stock.low + SEP + stock.high + NEW_LINE
+    text = text[:-1]
+    uploadFileToDropBox(text)
 
 def processAllStocks(pInstance):
     global logger
@@ -111,7 +119,6 @@ def processAllStocks(pInstance):
             logger.info('Current price for ' + stock.ticker + ' is more than minimum price ' + str(stock.high))
             email_txt += stock.ticker + ' is above the maximum price ' + str(stock.high)
             stock.high = 1.01 * stock.high
-
     return email_txt, send_mail
 
 
@@ -135,7 +142,6 @@ def getFileFromDropBox():
     dbx.users_get_current_account()
     path = '/Finance/stocks.txt'
     last_modified_date_time = dbx.files_get_metadata(path).client_modified
-    curr_date_time = datetime.datetime.now(pytz.timezone('US/Eastern'))
     if last_modified is None or last_modified_date_time > last_modified:
         logger.info('Dropbox file changed.Reading new file')
         try:
@@ -147,6 +153,25 @@ def getFileFromDropBox():
         file_changed = True
         last_modified = last_modified_date_time
     return file_changed, data
+
+def uploadFileToDropBox(text):
+    logger.info('Uploading file to dropbox')
+    auth_token = 'e7pGKdpUoZAAAAAAAAABcX28r0cul9w9slEQyuaAutv88eJc7Qz0ta8wxak2bguO'
+    dbx = dropbox.Dropbox(auth_token)
+    dbx.users_get_current_account()
+    overwrite=True
+    mode = (dropbox.files.WriteMode.overwrite
+            if overwrite
+            else dropbox.files.WriteMode.add)
+    path = '/Finance/stocks.txt'  
+    res = 'Failed'
+    try:
+        res = dbx.files_upload(
+                text, path, mode)
+    except Exception, e:
+        print 'Error :', e
+
+    logger.info(res)
 
 def sendMail(email_text):
     server = smtplib.SMTP('smtp.gmail.com', 587)
