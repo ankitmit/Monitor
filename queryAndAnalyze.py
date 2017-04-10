@@ -86,7 +86,7 @@ def mainFunc():
         file_changed, data = getFileFromDropBox()
         if file_changed:
             pInstance = createAllStocks(data)
-        email_text, send_mail, change = processAllStocks(pInstance)
+        email_text, send_mail = processAllStocks(pInstance)
         if send_mail and email_text != '' and len(email_text) > 0:
 	    logger.info( 'sending email')
             sendMail(email_text)
