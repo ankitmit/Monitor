@@ -69,7 +69,7 @@ def createAllStocks(txt):
         if len(cols) > 4:
             high = cols[4]
         if len(cols) > 5:
-            delta = float(cols(5))
+            delta = float(cols[5])
 
         url = base_url[market] + ticker
         pInstance.addStock(Stock(ticker, name, market, low, high, url, delta))
