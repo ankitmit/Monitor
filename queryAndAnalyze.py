@@ -19,13 +19,14 @@ def isConfigFileModified():
     curr_date_time = datetime.datetime.now(pytz.timezone('US/Eastern'))
     
 class Stock:
-    def __init__(self, ticker, name, market, low, high, url):
+    def __init__(self, ticker, name, market, low, high, url, delta):
         self.ticker = ticker
         self.market = market
         self.low = low
         self.high = high
         self.url = url
         self.name = name
+        self.delta = delta
 
 
 class Process:
@@ -62,13 +63,16 @@ def createAllStocks(txt):
         market = cols[2]
         low = 0
         high = 0
+        delta = 0
         if len(cols) > 3:
             low = float(cols[3])
         if len(cols) > 4:
             high = cols[4]
+        if len(cols) > 5:
+            delta = float(cols(5))
 
         url = base_url[market] + ticker
-        pInstance.addStock(Stock(ticker, name, market, low, high, url))
+        pInstance.addStock(Stock(ticker, name, market, low, high, url, delta))
 
     return pInstance
 
@@ -98,7 +102,7 @@ def writeFileWithNewPrices():
     text = ''
     allStocks = pInstance.getAllStocks()
     for stock in allStocks:
-        text += stock.ticker + SEP + stock.name + SEP + stock.market + SEP + str(stock.low) + SEP + str(stock.high) + NEW_LINE
+        text += stock.ticker + SEP + stock.name + SEP + stock.market + SEP + str(stock.low) + SEP + str(stock.high) + SEP + str(stock.delta) + NEW_LINE
     text = text[:-1]
     uploadFileToDropBox(text)
 
@@ -112,13 +116,19 @@ def processAllStocks(pInstance):
         if curr_price != 0 and curr_price < stock.low:
             logger.info('Current price for ' + stock.ticker + ' is less than minimum price ' + str(stock.low))
             send_mail = True
-            email_txt += stock.ticker + ' is below the minimum price ' + str(stock.low)
-            stock.low = 0.95 * stock.low
+            email_txt += stock.ticker + ' is below the minimum price ' + str(stock.low) + NEW_LINE
+            if stock.delta != 0:
+                stock.low = stock.low - stock.delta
+            else:
+                stock.low = 0.98 * stock.low
         elif curr_price != 0 and curr_price > stock.high:
             send_mail = True
             logger.info('Current price for ' + stock.ticker + ' is more than minimum price ' + str(stock.high))
-            email_txt += stock.ticker + ' is above the maximum price ' + str(stock.high)
-            stock.high = 1.01 * stock.high
+            email_txt += stock.ticker + ' is above the maximum price ' + str(stock.high) + NEW_LINE
+            if stock.delta != 0:
+                stock.high = stock.high + stock.delta
+            else:
+                stock.high = 1.02 * stock.high
     return email_txt, send_mail
 
 
