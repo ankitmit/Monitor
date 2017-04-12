@@ -83,6 +83,7 @@ def mainFunc():
         if hour > 16:
             logger.info("Martkets are closed. Exiting the script now")
             time.sleep(600)
+            continue
         if hour < 9 or (hour == 9 and minute < 30):
             logger.info("Martkets are not yet open.Continue")
             time.sleep(600)
