@@ -67,7 +67,7 @@ def createAllStocks(txt):
         if len(cols) > 3:
             low = float(cols[3])
         if len(cols) > 4:
-            high = cols[4]
+            high = float(cols[4])
         if len(cols) > 5:
             delta = float(cols[5])
 
@@ -103,7 +103,8 @@ def writeFileWithNewPrices():
     text = ''
     allStocks = pInstance.getAllStocks()
     for stock in allStocks:
-        text += stock.ticker + SEP + stock.name + SEP + stock.market + SEP + str(stock.low) + SEP + str(stock.high) + SEP + str(stock.delta) + NEW_LINE
+        text += stock.ticker + SEP + stock.name + SEP + stock.market + SEP + str(stock.low) \
+                + SEP + str(stock.high) + SEP + str(stock.delta) + NEW_LINE
     text = text[:-1]
     uploadFileToDropBox(text)
 
