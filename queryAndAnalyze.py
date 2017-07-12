@@ -183,7 +183,7 @@ def uploadFileToDropBox(text):
     except Exception, e:
         print 'Error :', e
 
-    logger.info(res)
+    #logger.info(res)
 
 def sendMail(email_text):
     server = smtplib.SMTP('smtp.gmail.com', 587)
