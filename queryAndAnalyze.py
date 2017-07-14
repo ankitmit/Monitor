@@ -136,12 +136,16 @@ def processAllStocks(pInstance):
 
 def getCurrentPrice(stock):
     url = stock.url
-    myResponse = requests.get(url)
-    cont = myResponse.content[3:]
-    curr_price = 0
-    if myResponse.ok:
-        json_obj_list = json.loads(cont)
-        curr_price = float(json_obj_list[0]['l_cur'])
+    try:
+        myResponse = requests.get(url)
+        cont = myResponse.content[3:]
+        curr_price = 0
+        if myResponse.ok:
+            json_obj_list = json.loads(cont)
+            curr_price = float(json_obj_list[0]['l_cur'])
+    except:
+        logger.info("Shit broke while processing " + stock.name)
+        sendMail('Shit broke. Look into it jackass.')
     return curr_price
 
 
