@@ -142,7 +142,9 @@ def getCurrentPrice(stock):
         curr_price = 0
         if myResponse.ok:
             json_obj_list = json.loads(cont)
-            curr_price = float(json_obj_list[0]['l_cur'])
+	    price = json_obj_list[0]['l_cur']
+	    price = price.replace(',','')
+            curr_price = float(price)
     except:
         logger.info("Shit broke while processing " + stock.name)
         sendMail('Shit broke. Look into it jackass.')
