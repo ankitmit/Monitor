@@ -55,7 +55,7 @@ def createAllStocks(txt):
     allRows = txt.split('\n')
     for line in allRows:
         row = remove_unwanted_white(line)
-        if row == '' or len(row) < 1 :
+        if row == '' or len(row) < 1 or row[0] == '#:
             continue
         cols = row.split('`')
         ticker = cols[0]
