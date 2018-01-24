@@ -8,9 +8,10 @@ import re
 import datetime
 import logging
 import pytz
-base_url = {}
-base_url['NASDAQ'] = 'https://www.google.com/finance/info?q=NASDAQ%3A'
-base_url['NYSE'] = 'https://www.google.com/finance/info?q=NYSE%3A'
+# base_url = {}
+# base_url['NASDAQ'] = 'https://www.google.com/finance/info?q=NASDAQ%3A'
+# base_url['NYSE'] = 'https://www.google.com/finance/info?q=NYSE%3A'
+baseUrl = 'https://api.iextrading.com/1.0/stock/'
 last_modified = None
 NEW_LINE = '\n'
 SEP = '`'
@@ -27,7 +28,6 @@ class Stock:
         self.url = url
         self.name = name
         self.delta = delta
-
 
 class Process:
     def __init__(self):
@@ -71,7 +71,7 @@ def createAllStocks(txt):
         if len(cols) > 5:
             delta = float(cols[5])
 
-        url = base_url[market] + ticker
+        url = baseUrl + ticker + '/quote'
         pInstance.addStock(Stock(ticker, name, market, low, high, url, delta))
 
     return pInstance
@@ -97,7 +97,6 @@ def mainFunc():
             sendMail(email_text)
             writeFileWithNewPrices()
         time.sleep(120)
-
 
 def writeFileWithNewPrices():
     text = ''
@@ -133,23 +132,21 @@ def processAllStocks(pInstance):
                 stock.high = 1.02 * stock.high
     return email_txt, send_mail
 
-
 def getCurrentPrice(stock):
     url = stock.url
     try:
         myResponse = requests.get(url)
-        cont = myResponse.content[3:]
+        cont = myResponse.content
         curr_price = 0
         if myResponse.ok:
             json_obj_list = json.loads(cont)
-	    price = json_obj_list[0]['l_cur']
-	    price = price.replace(',','')
-            curr_price = float(price)
+        price = json_obj_list['latestPrice']#json_obj_list[0]['l_cur']
+
+        curr_price = float(price)
     except:
         logger.info("Shit broke while processing " + stock.name)
         sendMail('Shit broke. Look into it jackass.')
     return curr_price
-
 
 def getFileFromDropBox():
     global last_modified, logger
