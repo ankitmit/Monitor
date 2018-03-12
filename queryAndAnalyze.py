@@ -11,7 +11,7 @@ import pytz
 # base_url = {}
 # base_url['NASDAQ'] = 'https://www.google.com/finance/info?q=NASDAQ%3A'
 # base_url['NYSE'] = 'https://www.google.com/finance/info?q=NYSE%3A'
-baseUrl = 'https://api.iextrading.com/1.0/stock/'
+baseUrl = 'https://api.iextrading.com/1.0/stock/market/batch?types=quote&symbols='
 last_modified = None
 NEW_LINE = '\n'
 SEP = '`'
@@ -20,24 +20,31 @@ def isConfigFileModified():
     curr_date_time = datetime.datetime.now(pytz.timezone('US/Eastern'))
     
 class Stock:
-    def __init__(self, ticker, name, market, low, high, url, delta):
+    def __init__(self, ticker, name, market, low, high, delta):
         self.ticker = ticker
         self.market = market
         self.low = low
         self.high = high
-        self.url = url
+        #self.url = url
         self.name = name
         self.delta = delta
 
 class Process:
     def __init__(self):
         self.allStocks = []
+        self.tickers = []
 
     def addStock(self, stock):
         self.allStocks.append(stock)
 
+    def addTicker(self, ticker):
+        self.tickers.append(ticker)
+
     def getAllStocks(self):
         return self.allStocks
+
+    def getAllTickers(self):
+        return self.tickers
 
 def remove_unwanted_white(str):
 		str = re.sub("\s\s+" , " ", str)
@@ -48,6 +55,34 @@ def remove_unwanted_white(str):
 def getCurrentHourAndMinutes():
     curr = datetime.datetime.now(pytz.timezone('US/Eastern')) 
     return curr.hour, curr.minute
+
+def createAllStocksNew(txt):
+    global pInstance,base_url
+    pInstance = Process()
+    allRows = txt.split('\n')
+    for line in allRows:
+        row = remove_unwanted_white(line)
+        if row == '' or len(row) < 1 or row[0] == '#':
+            continue
+        cols = row.split('`')
+        ticker = cols[0]
+        name = cols[1]
+        market = cols[2]
+        low = 0
+        high = 0
+        delta = 0
+        if len(cols) > 3:
+            low = float(cols[3])
+        if len(cols) > 4:
+            high = float(cols[4])
+        if len(cols) > 5:
+            delta = float(cols[5])
+
+        #url = baseUrl + ticker + '/quote'
+        pInstance.addStock(Stock(ticker, name, market, low, high, delta))
+        pInstance.addTicker(ticker)
+
+    return pInstance
 
 def createAllStocks(txt):
     global pInstance,base_url
@@ -90,8 +125,8 @@ def mainFunc():
             continue
         file_changed, data = getFileFromDropBox()
         if file_changed:
-            pInstance = createAllStocks(data)
-        email_text, send_mail = processAllStocks(pInstance)
+            pInstance = createAllStocksNew(data)
+        email_text, send_mail = processAllStocksNew(pInstance)
         if send_mail and email_text != '' and len(email_text) > 0:
 	    logger.info( 'sending email')
             sendMail(email_text)
@@ -132,21 +167,49 @@ def processAllStocks(pInstance):
                 stock.high = 1.02 * stock.high
     return email_txt, send_mail
 
-def getCurrentPrice(stock):
-    url = stock.url
+def processAllStocksNew(pInstance):
+    global logger
+    allStocks = pInstance.getAllStocks()
+    allStocksUrl = baseUrl + ','.join(pInstance.getAllTickers())
+    email_txt = ''
+    send_mail = False
+    allPricesJson = getCurrentPrice(allStocksUrl)
+    for stock in allStocks:
+        curr_price = None
+        if allPricesJson[stock.ticker] is None:
+            logger.info("Price for " + stock.ticker + " is not available")
+            continue
+        curr_price = allPricesJson[stock.ticker]['quote']['latestPrice']
+        if curr_price != 0 and curr_price < stock.low:
+            logger.info('Current price for ' + stock.ticker + ' is less than minimum price ' + str(stock.low))
+            send_mail = True
+            email_txt += stock.ticker + ' is below the minimum price ' + str(stock.low) + NEW_LINE
+            if stock.delta != 0:
+                stock.low = stock.low - stock.delta
+            else:
+                stock.low = 0.98 * stock.low
+        elif curr_price != 0 and curr_price > stock.high:
+            send_mail = True
+            logger.info('Current price for ' + stock.ticker + ' is more than minimum price ' + str(stock.high))
+            email_txt += stock.ticker + ' is above the maximum price ' + str(stock.high) + NEW_LINE
+            if stock.delta != 0:
+                stock.high = stock.high + stock.delta
+            else:
+                stock.high = 1.02 * stock.high
+    return email_txt, send_mail
+
+def getCurrentPrice(url):
+    json_obj_list = {}
     try:
         myResponse = requests.get(url)
         cont = myResponse.content
-        curr_price = 0
         if myResponse.ok:
             json_obj_list = json.loads(cont)
-        price = json_obj_list['latestPrice']#json_obj_list[0]['l_cur']
 
-        curr_price = float(price)
     except:
-        logger.info("Shit broke while processing " + stock.name)
+        logger.info("Shit broke while getting prices.")
         sendMail('Shit broke. Look into it jackass.')
-    return curr_price
+    return json_obj_list
 
 def getFileFromDropBox():
     global last_modified, logger
@@ -179,7 +242,6 @@ def uploadFileToDropBox(text):
             if overwrite
             else dropbox.files.WriteMode.add)
     path = '/Finance/stocks.txt'  
-    res = 'Failed'
     try:
         res = dbx.files_upload(
                 text, path, mode)
