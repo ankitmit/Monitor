@@ -251,11 +251,17 @@ def uploadFileToDropBox(text):
     #logger.info(res)
 
 def sendMail(email_text):
-    server = smtplib.SMTP('smtp.gmail.com', 587)
-    server.starttls()
-    server.login("crackcat2k11@gmail.com", "ankitmittalbgh")
+    #server = smtplib.SMTP('smtp.gmail.com', 587)
+    #server.starttls()
+    #server.login("crackcat2k11@gmail.com", "ankitmittalbgh")
 
-    server.sendmail("crackcat2k11@gmail.com", "crackcat2k11@gmail.com", email_text)
+    #server.sendmail("crackcat2k11@gmail.com", "crackcat2k11@gmail.com", email_text)
+    gmail_user='crackcat2k11@gmail.com'
+    password='ankitmittalbgh'
+    TO='crackcat2k11@gmail.com'
+    server = smtplib.SMTP_SSL('smtp.googlemail.com', 465)
+    server.login(gmail_user, password)
+    server.sendmail(gmail_user, TO, email_text)
     server.quit()
 
 logger = logging.getLogger(__name__)
@@ -272,5 +278,5 @@ handler.setFormatter(formatter)
 # add the handlers to the logger
 logger.addHandler(handler)
 
-sendMail("Test text")
-# mainFunc()
+#sendMail("Test text")
+mainFunc()
