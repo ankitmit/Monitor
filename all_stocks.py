@@ -48,7 +48,7 @@ class AllStocks:
         email_text = ''
         for stock_instance in self.stocks_instances:
             ticker = stock_instance.ticker
-            price = float(price_json[ticker]["latestPrice"])
+            price = float(price_json[ticker]["quote"]["latestPrice"])
             if price < stock_instance.low:
                 email_text += 'Price of %s is lower than %d' %(stock_instance.name, stock_instance.low)
                 stock_instance.low -= stock_instance.delta

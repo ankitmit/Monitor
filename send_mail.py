@@ -5,8 +5,8 @@ class SendMailServer:
     self.port = port
     self.provider = provider
 
-    server = smtplib.SMTP_SSL(provider, port)
-    server.login('crackcat2k11', 'ankitmittalbgh')
+    self.server = smtplib.SMTP_SSL(provider, port)
+    self.server.login('crackcat2k11', 'ankitmittalbgh')
 
     
   def SendMail(self, email_text):

@@ -8,13 +8,13 @@ SEP = '`'
 NEW_LINE = '\n'
 
 
-def writeFileWithNewPrices(stocks, dropbox_instance):
+def writeFileWithNewPrices(stocks, dropbox_instance, logger):
     text = ''
-    for stock in stocks:
+    for stock in stocks.stocks_instances:
         text += stock.ticker + SEP + stock.name + SEP + str(stock.low) \
                 + SEP + str(stock.high) + SEP + str(stock.delta) + NEW_LINE
     text = text[:-1]
-    dropbox_instance.uploadFileToDropBox(text)
+    dropbox_instance.uploadFileToDropBox(logger, text)
 
 def mainFunc() :
     dropbox_instance = dropbox_wrapper.DropBox()
@@ -40,8 +40,8 @@ def mainFunc() :
         email_text = stocks.processAllStocks()
         if email_text != '' and len(email_text) > 0:
             logger.info('sending email')
-            send_mail_server.SendMail(email_text, 'crackcat2k11@gmail.com')
-            writeFileWithNewPrices(stocks, dropbox_instance)
+            send_mail_server.SendMail(email_text)
+            writeFileWithNewPrices(stocks, dropbox_instance, logger)
     time.sleep(120)
 
 mainFunc()
