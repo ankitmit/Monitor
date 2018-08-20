@@ -6,8 +6,8 @@ class DropBoxException(Exception):
 class DropBox():
     def __init__(self):
         auth_token = 'e7pGKdpUoZAAAAAAAAABcX28r0cul9w9slEQyuaAutv88eJc7Qz0ta8wxak2bguO'
-        dbx = dropbox.Dropbox(auth_token)
-        dbx.users_get_current_account()
+        self.dbx = dropbox.Dropbox(auth_token)
+        self.dbx.users_get_current_account()
 
     def getFileFromDropBox(self, last_modified, logger):
         file_changed = False

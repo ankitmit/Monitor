@@ -17,7 +17,7 @@ def writeFileWithNewPrices(stocks, dropbox_instance):
     dropbox_instance.uploadFileToDropBox(text)
 
 def mainFunc() :
-    dropbox_instance = dropbox_wrapper.Dropbox()
+    dropbox_instance = dropbox_wrapper.DropBox()
     logger = utils.createLoggerInstance()
     last_modified = None
     stocks = all_stocks.AllStocks(logger)
