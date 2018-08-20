@@ -1,8 +1,7 @@
 import smtplib
 
 class SendMailServer:
-  def __init__(self, to, port, provider):
-    self.to = to
+  def __init__(self, port, provider):
     self.port = port
     self.provider = provider
 
@@ -10,5 +9,5 @@ class SendMailServer:
     server.login('crackcat2k11', 'ankitmittalbgh')
 
     
-  def SendMail(self, email_text, to):
-    self.server.sendmail('crackcat2k11@gmail.com', to, email_text)
+  def SendMail(self, email_text):
+    self.server.sendmail('crackcat2k11@gmail.com', 'crackcat2k11@gmail.com', email_text)
