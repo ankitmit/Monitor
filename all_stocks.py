@@ -39,7 +39,7 @@ class AllStocks:
             low = float(cols[2])
             high = float(cols[3])
             delta = float(cols[4])
-            self.stocks_instances.addStock(stock.Stock(ticker, name, low, high, delta))
+            self.stocks_instances.append(stock.Stock(ticker, name, low, high, delta))
         self.tickers = ','.join(tickers_list)
 
     def processAllStocks(self):
