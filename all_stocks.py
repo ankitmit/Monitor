@@ -24,6 +24,8 @@ class AllStocks:
         self.logger = logger
 
     def populateAllStocks(self, data):
+        self.tickers = ''
+        self.stocks_instances = []
         allRows = data.split('\n')
         tickers_list = []
         for line in allRows:
