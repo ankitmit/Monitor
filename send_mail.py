@@ -1,13 +1,14 @@
 import smtplib
-class SendMail:
-  def __init__(self, from, to, port, provider):
-    self.from = from
+
+class SendMailServer:
+  def __init__(self, to, port, provider):
     self.to = to
     self.port = port
     self.provider = provider
+
+    server = smtplib.SMTP_SSL(provider, port)
+    server.login('crackcat2k11', 'ankitmittalbgh')
+
     
-  def SendMail(self)
-    server = smtplib.SMTP_SSL('smtp.googlemail.com', 465)
-    server.login(gmail_user, password)
-    server.sendmail(gmail_user, TO, email_text)
-    server.quit()
+  def SendMail(self, email_text, to):
+    self.server.sendmail('crackcat2k11@gmail.com', to, email_text)
