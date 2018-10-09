@@ -24,7 +24,6 @@ def mainFunc() :
         stocks = all_stocks.AllStocks(logger)
         file_changed, data, last_modified = dropbox_instance.getFileFromDropBox(last_modified, logger)
         stocks.populateAllStocks(data)
-        send_mail_server = send_mail.SendMailServer(465, 'smtp.googlemail.com')
         while True:
             hour, minute = utils.getCurrentHourAndMinutes()
             if hour > 16:
@@ -41,7 +40,7 @@ def mainFunc() :
             email_text = stocks.processAllStocks()
             if email_text != '' and len(email_text) > 0:
                 logger.info('sending email')
-                send_mail_server.SendMail(email_text)
+                send_mail.SendMail(email_text, 465, 'smtp.googlemail.com')
                 writeFileWithNewPrices(stocks, dropbox_instance, logger)
             time.sleep(120)
     except Exception, e:
