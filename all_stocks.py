@@ -15,6 +15,7 @@ def _GetCurrentPrice(url, logger):
 
     except:
         logger.info("Shit broke while getting prices.")
+        raise Exception("Cannot get prices.")
     return json_obj_list
 
 class AllStocks:
@@ -51,10 +52,11 @@ class AllStocks:
         for stock_instance in self.stocks_instances:
             ticker = stock_instance.ticker
             price = float(price_json[ticker]["quote"]["latestPrice"])
+            self.logger.info('Price of ticke %s is %d' %(ticker, price))
             if price < stock_instance.low:
                 email_text += 'Price of %s is lower than %d' %(stock_instance.name, stock_instance.low)
-                stock_instance.low -= stock_instance.delta
+                stock_instance.low = price - stock_instance.delta
             if price > stock_instance.high:
                 email_text += 'Price of %s is higher than %d' %(stock_instance.name, stock_instance.high)
-                stock_instance.high += stock_instance.delta
+                stock_instance.high = price + stock_instance.delta
         return email_text

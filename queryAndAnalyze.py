@@ -17,31 +17,35 @@ def writeFileWithNewPrices(stocks, dropbox_instance, logger):
     dropbox_instance.uploadFileToDropBox(logger, text)
 
 def mainFunc() :
-    dropbox_instance = dropbox_wrapper.DropBox()
-    logger = utils.createLoggerInstance()
-    last_modified = None
-    stocks = all_stocks.AllStocks(logger)
-    file_changed, data, last_modified = dropbox_instance.getFileFromDropBox(last_modified, logger)
-    stocks.populateAllStocks(data)
-    send_mail_server = send_mail.SendMailServer(465, 'smtp.googlemail.com')
-    while True:
-        hour, minute = utils.getCurrentHourAndMinutes()
-        if hour > 16:
-            logger.info("Martkets are closed. Exiting the script now")
-            time.sleep(600)
-            continue
-        if hour < 9 or (hour == 9 and minute < 30):
-            logger.info("Martkets are not yet open.Continue")
-            time.sleep(600)
-            continue
+    try:
+        dropbox_instance = dropbox_wrapper.DropBox()
+        logger = utils.createLoggerInstance()
+        last_modified = None
+        stocks = all_stocks.AllStocks(logger)
         file_changed, data, last_modified = dropbox_instance.getFileFromDropBox(last_modified, logger)
-        if file_changed:
-            stocks.populateAllStocks(data)
-        email_text = stocks.processAllStocks()
-        if email_text != '' and len(email_text) > 0:
-            logger.info('sending email')
-            send_mail_server.SendMail(email_text)
-            writeFileWithNewPrices(stocks, dropbox_instance, logger)
-    time.sleep(120)
+        stocks.populateAllStocks(data)
+        send_mail_server = send_mail.SendMailServer(465, 'smtp.googlemail.com')
+        while True:
+            hour, minute = utils.getCurrentHourAndMinutes()
+            if hour > 16:
+                logger.info("Martkets are closed. Exiting the script now")
+                time.sleep(600)
+                continue
+            if hour < 9 or (hour == 9 and minute < 30):
+                logger.info("Martkets are not yet open.Continue")
+                time.sleep(600)
+                continue
+            file_changed, data, last_modified = dropbox_instance.getFileFromDropBox(last_modified, logger)
+            if file_changed:
+                stocks.populateAllStocks(data)
+            email_text = stocks.processAllStocks()
+            if email_text != '' and len(email_text) > 0:
+                logger.info('sending email')
+                send_mail_server.SendMail(email_text)
+                writeFileWithNewPrices(stocks, dropbox_instance, logger)
+            time.sleep(120)
+    except Exception, e:
+        logger.info("Exception occured : %s", e)
+        raise Exception("Stop running the script")
 
 mainFunc()
