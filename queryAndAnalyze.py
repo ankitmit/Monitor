@@ -26,12 +26,12 @@ def mainFunc() :
         stocks.populateAllStocks(data)
         while True:
             hour, minute = utils.getCurrentHourAndMinutes()
-            if hour > 16:
-                logger.info("Martkets are closed. Exiting the script now")
+            if hour > 19:
+                #logger.info("Martkets are closed. Exiting the script now")
                 time.sleep(600)
                 continue
             if hour < 9 or (hour == 9 and minute < 30):
-                logger.info("Martkets are not yet open.Continue")
+                #logger.info("Martkets are not yet open.Continue")
                 time.sleep(600)
                 continue
             file_changed, data, last_modified = dropbox_instance.getFileFromDropBox(last_modified, logger)
