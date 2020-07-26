@@ -2,7 +2,7 @@ import utils
 import requests
 import json
 import stock
-
+#ankit
 BASE_URL = 'https://api.iextrading.com/1.0/stock/market/batch?types=quote&symbols='
 
 def _GetCurrentPrice(url, logger):
