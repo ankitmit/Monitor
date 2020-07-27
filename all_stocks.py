@@ -2,16 +2,26 @@ import utils
 import requests
 import json
 import stock
-#ankit
-BASE_URL = 'https://api.iextrading.com/1.0/stock/market/batch?types=quote&symbols='
+import yfinance as yf
 
-def _GetCurrentPrice(url, logger):
+_BASE_URL = 'https://finnhub.io/api/v1/quote?symbol='
+#BASE_URL = 'https://api.iextrading.com/1.0/stock/market/batch?types=quote&symbols='
+
+def _GetCurrentPrice(ticker, logger):
+    url= _BASE_URL + ticker
+    logger.info(url)
+    print url
     json_obj_list = {}
     try:
         myResponse = requests.get(url)
-        cont = myResponse.content
+        print(myResponse)
         if myResponse.ok:
-            json_obj_list = json.loads(cont)
+            print('here')
+            price = float(myResponse.json()['c'])
+            print price
+            return price
+        else:
+            raise Exception('Response not OK to get price of the ticker.')
 
     except:
         logger.info("Shit broke while getting prices.")
@@ -45,14 +55,12 @@ class AllStocks:
             self.stocks_instances.append(stock.Stock(ticker, name, low, high, delta))
         self.tickers = ','.join(tickers_list)
 
-    def processAllStocks(self):
-        request_url = BASE_URL + self.tickers
-        price_json = _GetCurrentPrice(request_url, self.logger)
+    def processAllStocks(self):        
         email_text = ''
         for stock_instance in self.stocks_instances:
             ticker = stock_instance.ticker
-            price = float(price_json[ticker]["quote"]["latestPrice"])
-            #self.logger.info('Price of ticke %s is %d' %(ticker, price))
+            price = yf.Ticker(ticker).info['ask']
+            self.logger.info('Price of ticker %s is %d' %(ticker, price))
             if price < stock_instance.low:
                 email_text += 'Price of %s is lower than %d' %(stock_instance.name, stock_instance.low)
                 stock_instance.low = price - stock_instance.delta

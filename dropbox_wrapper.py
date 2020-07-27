@@ -18,6 +18,7 @@ class DropBox():
             logger.info('Dropbox file changed.Reading new file')
             try:
                 md, res = self.dbx.files_download(path)
+                print(res)
             except dropbox.exceptions.HttpError as err:
                 logger.info('*** HTTP error', err)
                 raise DropBoxException('Unable to read file from dropbox')
@@ -27,6 +28,7 @@ class DropBox():
             data = res.content
             file_changed = True
             last_modified = last_modified_date_time
+            print(data)
         return file_changed, data, last_modified
 
     def uploadFileToDropBox(self, logger, text):

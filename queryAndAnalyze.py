@@ -20,6 +20,7 @@ def mainFunc() :
     try:
         dropbox_instance = dropbox_wrapper.DropBox()
         logger = utils.createLoggerInstance()
+        logger.info('ankit is here')
         last_modified = None
         stocks = all_stocks.AllStocks(logger)
         file_changed, data, last_modified = dropbox_instance.getFileFromDropBox(last_modified, logger)
@@ -44,6 +45,7 @@ def mainFunc() :
                 writeFileWithNewPrices(stocks, dropbox_instance, logger)
             time.sleep(120)
     except Exception, e:
+        print("Exception occured : %s", e)
         logger.info("Exception occured : %s", e)
         raise Exception("Stop running the script")
 
