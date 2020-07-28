@@ -4,7 +4,7 @@ import json
 import stock
 import yfinance as yf
 
-_BASE_URL = 'https://finnhub.io/api/v1/quote?symbol='
+#_BASE_URL = 'https://finnhub.io/api/v1/quote?symbol='
 #BASE_URL = 'https://api.iextrading.com/1.0/stock/market/batch?types=quote&symbols='
 
 def _GetCurrentPrice(ticker, logger):
@@ -14,7 +14,7 @@ def _GetCurrentPrice(ticker, logger):
     json_obj_list = {}
     try:
         myResponse = requests.get(url)
-        print(myResponse)
+        #print(myResponse)
         if myResponse.ok:
             print('here')
             price = float(myResponse.json()['c'])
@@ -57,16 +57,21 @@ class AllStocks:
 
     def processAllStocks(self):        
         email_text = ''
+
         for stock_instance in self.stocks_instances:
             ticker = stock_instance.ticker
-            price = yf.Ticker(ticker).info['ask']
-            self.logger.info('Price of ticker %s is %d' %(ticker, price))
-            if price < stock_instance.low:
-                email_text += 'Price of %s is lower than %d' %(stock_instance.name, stock_instance.low)
-                stock_instance.low = price - stock_instance.delta
-		stock_instance.high = price + (2 * stock_instance.delta)
-            if price > stock_instance.high:
-                email_text += 'Price of %s is higher than %d' %(stock_instance.name, stock_instance.high)
-                stock_instance.high = price + stock_instance.delta
-		stock_instance.low = price - (2 * stock_instance.delta)
+            try:
+                info = yf.Ticker(ticker).info
+                price = info['ask']
+                #self.logger.info('Price of ticker %s is %d' %(ticker, price))
+                if price < stock_instance.low:
+                    email_text += 'Price of %s is lower than %d' %(stock_instance.name, stock_instance.low)
+                    stock_instance.low = price - stock_instance.delta
+		    stock_instance.high = price + (2 * stock_instance.delta)
+                if price > stock_instance.high:
+                    email_text += 'Price of %s is higher than %d' %(stock_instance.name, stock_instance.high)
+                    stock_instance.high = price + stock_instance.delta
+		    stock_instance.low = price - (2 * stock_instance.delta)
+            except Exception as e:
+                logger.info('Exception getting price for ticker %s', ticker)
         return email_text

@@ -5,7 +5,7 @@ class DropBoxException(Exception):
 
 class DropBox():
     def __init__(self):
-        auth_token = 'e7pGKdpUoZAAAAAAAAABcX28r0cul9w9slEQyuaAutv88eJc7Qz0ta8wxak2bguO'
+        auth_token = 'e7pGKdpUoZAAAAAAAAADuBcRACZa_d_1Imqny6VuDflqzGCyQ0dAyEUbHp8954xZ'
         self.dbx = dropbox.Dropbox(auth_token)
         self.dbx.users_get_current_account()
 
@@ -18,17 +18,15 @@ class DropBox():
             logger.info('Dropbox file changed.Reading new file')
             try:
                 md, res = self.dbx.files_download(path)
-                print(res)
             except dropbox.exceptions.HttpError as err:
-                logger.info('*** HTTP error', err)
-                raise DropBoxException('Unable to read file from dropbox')
+                logger.info('*** HTTP error Dropbox specific exception', err)
+                #raise DropBoxException('Unable to read file from dropbox')
             except Exception as err:
-                logger.info('*** Exception : %s', err)
-                raise DropBoxException('DropBoxException happened while reading file from Dropbox')
+                logger.info('*** Dropbox general Exception : %s', err)
+                #raise DropBoxException('DropBoxException happened while reading file from Dropbox')
             data = res.content
             file_changed = True
             last_modified = last_modified_date_time
-            print(data)
         return file_changed, data, last_modified
 
     def uploadFileToDropBox(self, logger, text):
@@ -38,5 +36,5 @@ class DropBox():
         try:
             res = self.dbx.files_upload(text, path, mode)
         except Exception as err:
-            logger.info("Exception : %s", err)
-            raise DropBoxException('DropBoxException happened while writing file to Dropbox')
+            logger.info("Exception trying to upload file to dropox: %s", err)
+            #raise DropBoxException('DropBoxException happened while writing file to Dropbox')
